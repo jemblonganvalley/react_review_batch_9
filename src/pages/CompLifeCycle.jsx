@@ -1,5 +1,6 @@
 
 import React, { Component, useEffect, useState } from 'react'
+import { Link } from "react-router-dom"
 
 // export default class CompLifeCycle extends Component {
 
@@ -47,17 +48,20 @@ export default function CompLifeCycle() {
 
     //state
     const [show, setShow] = useState(false)
-    const handleShow = () => { setShow(!show) }
-
     const [post, setPost] = useState([]) // undefined
+    const [page, setPage] = useState(1)
+
+    // function
+    const handleShow = () => { setShow(!show) }
     const getPost = async () => {
         try {
-            const result = await fetch("https://jsonplaceholder.typicode.com/posts", {
-                method: "GET",
-                headers: {
-                    "Content-Type": "application/json"
-                }
-            })
+            const result = await fetch(`https://jsonplaceholder.typicode.com/posts?_limit=5&_page=${page}`,
+                {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
             const data = await result.json()
             return data
         } catch (error) {
@@ -65,18 +69,21 @@ export default function CompLifeCycle() {
         }
     }
 
+    // next / prev page
+    const nextPage = () => { setPage(page + 1) }
+    const prevPage = () => {
+        if (page <= 1) {
+            return //code berhenti disini
+        }
+        setPage(page - 1)
+    }
+
     // component did mount
     useEffect(() => {
-        console.info("component terlihat di web")
         getPost()
             .then((data) => { setPost(data) })
             .catch((err) => { console.error(err) })
-    }, [])
-
-    // comp update
-    useEffect(() => {
-        console.info("state show di update")
-    }, [show])
+    }, [page])
 
     return (
         <div className='App'>
@@ -86,10 +93,16 @@ export default function CompLifeCycle() {
 
             {post.map((e) => (
                 <div key={e.id}>
-                    <h3>{e.title}</h3>
+                    <h3>{e.id} . {e.title}</h3>
                     <p>{e.body}</p>
+                    <Link to={`/route/${e.id}`} >lihat</Link>
                 </div>
             ))}
+            <div>
+                <button onClick={prevPage}>prev</button>
+                {page}
+                <button onClick={nextPage}>next</button>
+            </div>
         </div>
     )
 }
